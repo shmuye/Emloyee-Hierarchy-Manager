@@ -14,6 +14,8 @@ import {
     Divider,
     Badge,
     Stack,
+    Box,
+    LoadingOverlay,
 } from "@mantine/core";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -36,10 +38,22 @@ const PositionDetail = () => {
     }, [dispatch, positionId]);
 
     const position = positions.find((p) => p.id === positionId);
-    if (loading) return <Text  component="div"   c="dimmed" p="md">Loading position...</Text>;
-    if (error) return <Text  component="div"     c="red" p="md">Error: {error}</Text>;
-    if (!position) return <Text component="div"  c="dimmed" p="md">Position not found.</Text>;
+    const parentPosition = positions.find((p) => p.id === position?.parentId);
+    const parentName = parentPosition ? parentPosition.name : "Root Position";
 
+
+    if (loading) return (
+        <Box p="md">
+            <LoadingOverlay visible={loading} />
+            <Text c="dimmed">Loading position...</Text>
+        </Box>
+    );
+
+    if (error) return (
+        <Box p="md">
+            <Text c="red">Error: {error}</Text>
+        </Box>
+    );
     return (
         <Card
             withBorder
@@ -84,24 +98,21 @@ const PositionDetail = () => {
                 </Group>
             </Group>
 
-            {/* Position Details */}
+
             <Stack gap="xs">
                 <Title order={2} c="dark">
-                    {position.name}
+                    {position?.name}
                 </Title>
                 <Text size="sm" c="dimmed">
-                    {position.description}
+                    {position?.description}
                 </Text>
             </Stack>
 
             <Divider my="md" />
 
-            {position.parentId ? (
-                <Text size="sm" c="gray">
-                    Reports to:{" "}
-                    <Badge color="blue" radius="sm" variant="light">
-                        {position.parentId}
-                    </Badge>
+            {position?.parentId ? (
+                <Text size="sm" c="gray" fw="bold">
+                    Reports to:{" "} {parentName}
                 </Text>
             ) : (
                 <Badge color="teal" radius="sm" variant="light">
@@ -109,10 +120,7 @@ const PositionDetail = () => {
                 </Badge>
             )}
 
-
             <DeleteDialog opened={deleteDialog} onClose={() => setDeleteDialog(false)} />
-
-
             <EditModal opened={editModal} onClose={() => setEditModal(false)} />
         </Card>
     );

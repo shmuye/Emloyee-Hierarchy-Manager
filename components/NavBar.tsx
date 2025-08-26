@@ -1,6 +1,5 @@
-import {Typography,Button} from "@mantine/core";
+
 import AddPositionModal from "@/components/AddPositionModal";
-import {bold} from "next/dist/lib/picocolors";
 const NavBar = () => {
     return (
         <header className="py-4 px-2 bg-slate-800 text-white bg-card">

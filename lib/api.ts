@@ -1,4 +1,4 @@
-// lib/api.ts
+
 import axios from "axios";
 import { Position } from "@/types/position";
 
@@ -17,3 +17,4 @@ export const createPosition = (data: Omit<Position, "id">) =>
 export const updatePosition = (id: number, data: Partial<Position>) =>
     api.patch(`/positions/${id}`, data);
 export const deletePosition = (id: number) => api.delete(`/positions/${id}`);
+
