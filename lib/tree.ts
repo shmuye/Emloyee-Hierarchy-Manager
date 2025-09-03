@@ -1,3 +1,4 @@
+/*
 import lodash from "lodash";
 import { Position } from "@/types/position";
 
@@ -13,3 +14,4 @@ export function buildTree(positions: Position[]) {
 
     return attachChildren(grouped["null"] || []); // root nodes where parentId = null
 }
+*/

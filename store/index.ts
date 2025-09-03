@@ -1,9 +1,11 @@
 import {configureStore} from "@reduxjs/toolkit";
-import PositionReducer from "./slices/positionSlice";
+import authReducer from "./slices/authSlice";
+import positionReducer from "./slices/positionSlice";
 
 export const store = configureStore({
     reducer: {
-        positions: PositionReducer,
+        positions: positionReducer,
+        auth: authReducer
     },
     })
 ;

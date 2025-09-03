@@ -1,13 +1,19 @@
 "use client";
 
-import { Provider } from "react-redux";
-import { MantineProvider } from "@mantine/core";
-import { store } from "@/store";
+import { QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {MantineProvider} from "@mantine/core";
+import {AuthProvider} from "@/context/AuthContext";
+
+const queryClient = new QueryClient();
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
     return (
-        <Provider store={store}>
-            <MantineProvider>{children}</MantineProvider>
-        </Provider>
+        <QueryClientProvider client={queryClient}>
+            <MantineProvider>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
+            </MantineProvider>
+        </QueryClientProvider>
     );
 }

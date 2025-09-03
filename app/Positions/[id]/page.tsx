@@ -1,13 +1,14 @@
-
-
 import PositionDetail from "@/components/PositionDetail";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const Position = () => {
-    return(
-        <div className="flex justify-center">
-            <PositionDetail />;
-        </div>
-    )
+    return (
+        <ProtectedRoute>
+            <div className="flex justify-center">
+                <PositionDetail />
+            </div>
+        </ProtectedRoute>
+    );
 };
 
 export default Position;

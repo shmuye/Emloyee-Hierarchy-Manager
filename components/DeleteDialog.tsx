@@ -2,8 +2,9 @@
 
 import { Button, Dialog, Group, Text, Title, Stack } from "@mantine/core";
 import { useRouter, useParams } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store/hook";
-import { removePosition } from "@/store/slices/positionSlice";
+import { useQuery, useQueryClient, useMutation} from "@tanstack/react-query";
+import { getPositionById, deletePosition } from "@/lib/api";
+import { Position } from "@/types/position";
 
 interface DeleteDialogProps {
     opened: boolean;
@@ -11,18 +12,30 @@ interface DeleteDialogProps {
 }
 
 const DeleteDialog = ({ opened, onClose }: DeleteDialogProps) => {
-    const dispatch = useAppDispatch();
     const router = useRouter();
-    const { positions } = useAppSelector((state) => state.positions);
     const { id } = useParams();
-    const positionId = parseInt(id as string);
+    const positionId = id as string;
+    const queryClient = useQueryClient();
 
-    const position = positions.find((p) => p.id === positionId);
 
-    const handleDelete = async () => {
-        await dispatch(removePosition(positionId));
-        onClose();
-        router.push("/"); // redirect after deletion
+    const { data: position } = useQuery<Position>({
+        queryKey: ["position", positionId],
+        queryFn: () => getPositionById(positionId).then((res) => res.data),
+        enabled: !!positionId,
+    });
+
+    // Mutation for deletion
+    const mutation = useMutation({
+        mutationFn: () => deletePosition(positionId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["positions"] });
+            onClose();
+            router.push("/");
+        },
+    });
+
+    const handleDelete = () => {
+        mutation.mutate();
     };
 
     if (!position) return null;
@@ -53,7 +66,11 @@ const DeleteDialog = ({ opened, onClose }: DeleteDialogProps) => {
                     <Button variant="default" onClick={onClose}>
                         Cancel
                     </Button>
-                    <Button color="red" onClick={handleDelete}>
+                    <Button
+                        color="red"
+                        onClick={handleDelete}
+                        loading={mutation.isPending}
+                    >
                         Delete
                     </Button>
                 </Group>

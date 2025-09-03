@@ -3,18 +3,35 @@ import axios from "axios";
 import { Position } from "@/types/position";
 
 const api = axios.create({
-    baseURL: "http://localhost:3000", // Mockoon server
+    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
     headers: {
         "Content-Type": "application/json",
     },
 });
 
-export const getPositions = () => api.get<Position[]>("/positions");
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 
-export const getPositionById = (id: number) => api.get<Position>(`/positions/${id}`);
+export const getPositions = () => api.get<{tree: Position[]}>("/positions");
+
+export const getPositionById = (id: string) => api.get<{position: Position}>(`/positions/${id}`);
 export const createPosition = (data: Omit<Position, "id">) =>
     api.post("/positions", data);
-export const updatePosition = (id: number, data: Partial<Position>) =>
+export const updatePosition = (id: string, data: Partial<Position>) =>
     api.patch(`/positions/${id}`, data);
-export const deletePosition = (id: number) => api.delete(`/positions/${id}`);
+export const deletePosition = (id: string) => api.delete(`/positions/${id}`);
+export const login = (data: { email: string; password: string }) => api.post("/auth/login", data);
+export const registerUser = (data:
+                         {
+                             email: string;
+                             password: string;
+                             role: "OrgAdmin" | "User"
+                         }) => api.post("/auth/register", data);
+
+export default api;
 

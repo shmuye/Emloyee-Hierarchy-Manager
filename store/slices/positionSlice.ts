@@ -1,3 +1,4 @@
+
 // store/positionSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { Position } from "@/types/position";
@@ -22,7 +23,7 @@ export const fetchPositions = createAsyncThunk("positions/fetch", async () => {
 });
 
 export const fetchPositionById = createAsyncThunk("positions/fetchById",
-    async (id: number) => {
+    async (id: string) => {
     const response = await getPositionById(id);
     return response.data;
 });
@@ -37,13 +38,13 @@ export const addPosition = createAsyncThunk(
 
 export const editPosition = createAsyncThunk(
     "positions/edit",
-    async ({ id, data }: { id: number; data: Partial<Position> }) => {
+    async ({ id, data }: { id: string; data: Partial<Position> }) => {
         const response = await updatePosition(id, data);
         return response.data;
     }
 );
 
-export const removePosition = createAsyncThunk("positions/remove", async (id: number) => {
+export const removePosition = createAsyncThunk("positions/remove", async (id: string) => {
     await deletePosition(id);
     return id;
 });
@@ -95,10 +96,11 @@ const positionSlice = createSlice({
                 const index = state.positions.findIndex((p) => p.id === action.payload.id);
                 if (index !== -1) state.positions[index] = action.payload;
             })
-            .addCase(removePosition.fulfilled, (state, action: PayloadAction<number>) => {
+            .addCase(removePosition.fulfilled, (state, action: PayloadAction<string>) => {
                 state.positions = state.positions.filter((p) => p.id !== action.payload);
             });
     },
 });
 
 export default positionSlice.reducer;
+

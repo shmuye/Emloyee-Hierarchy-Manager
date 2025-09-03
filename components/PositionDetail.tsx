@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAppDispatch, useAppSelector } from "@/store/hook";
-import { fetchPositionById } from "@/store/slices/positionSlice";
+import { useState } from "react";
+import {useQuery} from "@tanstack/react-query";
+import  { getPositions, getPositionById} from "@/lib/api";
 import { useParams } from "next/navigation";
+import {Position} from "@/types/position";
 import {
     ActionIcon,
     Tooltip,
@@ -23,45 +24,49 @@ import DeleteDialog from "@/components/DeleteDialog";
 import EditModal from "@/components/EditModal";
 
 const PositionDetail = () => {
-    const { positions, loading, error } = useAppSelector((state) => state.positions);
-    const dispatch = useAppDispatch();
-    const { id } = useParams();
-    const positionId = parseInt(id as string);
+    const params = useParams();
+    const id = Array.isArray(params.id) ? params.id[0] : params.id ?? "";
+    console.log(id)
+
+    const { data: position, isLoading, error } = useQuery({
+        queryKey: ["position", id],
+        queryFn: async () => {
+            const res = await getPositionById(id);
+            return res.data.position;
+        },
+    });
+
+
+
+    const { data: positionsData } = useQuery({
+        queryKey: ["positions"],
+        queryFn: async () => {
+            const res = await getPositions();
+            return res.data;
+        },
+    });
+    const positions: Position[] = positionsData?.tree || []
 
     const [deleteDialog, setDeleteDialog] = useState(false);
     const [editModal, setEditModal] = useState(false);
-
-    useEffect(() => {
-        if (!isNaN(positionId)) {
-            dispatch(fetchPositionById(positionId));
-        }
-    }, [dispatch, positionId]);
-
-    const position = positions.find((p) => p.id === positionId);
-    const parentPosition = positions.find((p) => p.id === position?.parentId);
+    const parentPosition = positions?.find((p) => p.id === position?.parentId);
     const parentName = parentPosition ? parentPosition.name : "Root Position";
 
-
-    if (loading) return (
+    if (isLoading) return (
         <Box p="md">
-            <LoadingOverlay visible={loading} />
+            <LoadingOverlay visible />
             <Text c="dimmed">Loading position...</Text>
         </Box>
     );
 
-    if (error) return (
+    if (error instanceof Error) return (
         <Box p="md">
-            <Text c="red">Error: {error}</Text>
+            <Text c="red">Error: {error.message}</Text>
         </Box>
     );
+
     return (
-        <Card
-            withBorder
-            shadow="md"
-            radius="lg"
-            className="w-[80%] md:w-[60%] mx-auto mt-16"
-        >
-            {/* Header actions */}
+        <Card withBorder shadow="md" radius="lg" className="w-[80%] md:w-[60%] mx-auto mt-16">
             <Group justify="space-between" mb="md">
                 <Link href="/" passHref>
                     <Tooltip label="Back to Home" withArrow>
@@ -98,26 +103,17 @@ const PositionDetail = () => {
                 </Group>
             </Group>
 
-
             <Stack gap="xs">
-                <Title order={2} c="dark">
-                    {position?.name}
-                </Title>
-                <Text size="sm" c="dimmed">
-                    {position?.description}
-                </Text>
+                <Title order={2} c="dark">{position?.name}</Title>
+                <Text size="sm" c="dimmed">{position?.description}</Text>
             </Stack>
 
             <Divider my="md" />
 
             {position?.parentId ? (
-                <Text size="sm" c="gray" fw="bold">
-                    Reports to:{" "} {parentName}
-                </Text>
+                <Text size="sm" c="gray" fw="bold">Reports to: {parentName}</Text>
             ) : (
-                <Badge color="teal" radius="sm" variant="light">
-                    Root Position
-                </Badge>
+                <Badge color="teal" radius="sm" variant="light">Root Position</Badge>
             )}
 
             <DeleteDialog opened={deleteDialog} onClose={() => setDeleteDialog(false)} />
