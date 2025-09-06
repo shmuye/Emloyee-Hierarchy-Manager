@@ -1,0 +1,1 @@
+ALTER TABLE "positions" ADD CONSTRAINT "positions_name_unique" UNIQUE("name");
